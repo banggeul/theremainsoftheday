@@ -11,8 +11,8 @@ import AVFoundation
 
 var ghost : SKSpriteNode!
 var bg:SKSpriteNode!
-var ghostWalkingFrames : [SKTexture]!
-var ghostWalkingFrames2 : [SKTexture]!
+var ghostNotTalkFrames : [SKTexture]!
+var ghostTalkFrames : [SKTexture]!
 var go:Bool = false
 var audioPlayer:AVAudioPlayer?
 var bgAudio:AVAudioPlayer?
@@ -42,49 +42,46 @@ class GameScene: SKScene, AVAudioPlayerDelegate {
         let ghostAnimatedAtlas : SKTextureAtlas = SKTextureAtlas(named: "Blip")
 
         //Load the animation frames from the TextureAtlas
-        var walkFrames = [SKTexture]()
-        var walkFrames2 = [SKTexture]()
+        var talkFrames = [SKTexture]()
+        var notTalkFrames = [SKTexture]()
         let numImages : Int = ghostAnimatedAtlas.textureNames.count
         
         for i in 0...22 {
             let ghostTextureName = "Seq_\(i)"
-            walkFrames.append(ghostAnimatedAtlas.textureNamed(ghostTextureName))
+            notTalkFrames.append(ghostAnimatedAtlas.textureNamed(ghostTextureName))
         }
         
         for i in 23...numImages-1 {
             let ghostTextureName = "Seq_\(i)"
-            walkFrames2.append(ghostAnimatedAtlas.textureNamed(ghostTextureName))
+            talkFrames.append(ghostAnimatedAtlas.textureNamed(ghostTextureName))
             
         }
         
-        ghostWalkingFrames = walkFrames
-        ghostWalkingFrames2 = walkFrames2
+        ghostNotTalkFrames = notTalkFrames
+        ghostTalkFrames = talkFrames
   
-        let temp : SKTexture = ghostWalkingFrames[0]
+        let temp : SKTexture = ghostNotTalkFrames[0]
         ghost = SKSpriteNode(texture: temp)
         ghost.position = CGPoint(x:self.frame.midX, y:self.frame.midY)
         addChild(ghost)
         
-        
-        
-        //Start the bear walking
-        talkingGhost()
+        notTalkingGhost()
         
     }
     
-    func talkingGhost() {
+    func notTalkingGhost() {
         
-        var moveAction = SKAction.animate(with: ghostWalkingFrames, timePerFrame: 0.1, resize: false, restore: true)
+        var moveAction = SKAction.animate(with: ghostNotTalkFrames, timePerFrame: 0.1, resize: false, restore: true)
         
         let doneAction = SKAction.run({
             
             if(go == false)
             {
-                self.talkingGhost()
+                self.notTalkingGhost()
             }
             else {
                 
-                self.talkingGhost2()
+                self.talkingGhost()
             }
             
             
@@ -147,16 +144,16 @@ class GameScene: SKScene, AVAudioPlayerDelegate {
         
     }
     
-    func talkingGhost2() {
+    func talkingGhost() {
         
         if (audioPlayer!.prepareToPlay())
         {
             audioPlayer!.play()
         }
-                let moveAction = (SKAction.animate(with: ghostWalkingFrames2, timePerFrame: 0.06, resize: false, restore: true))
+                let moveAction = (SKAction.animate(with: ghostTalkFrames, timePerFrame: 0.06, resize: false, restore: true))
                 let doneAction = (SKAction.run({
                     print("Animation Completed")
-                    self.bearMoveEnded()
+                    self.ghostTalkEnded()
                     go = false
                 }))
                 let moveActionWithDone = (SKAction.sequence([moveAction, doneAction]))
@@ -164,10 +161,10 @@ class GameScene: SKScene, AVAudioPlayerDelegate {
                 ghost.run(moveActionWithDone, withKey:"bearMovingMore")
         
     }
-    func bearMoveEnded()
+    func ghostTalkEnded()
     {
         ghost.removeAllActions()
-        talkingGhost()
+        notTalkingGhost()
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event:UIEvent?){
